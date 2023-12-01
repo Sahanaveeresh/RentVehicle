@@ -1,38 +1,28 @@
-const db = require('../models/db');
+const rentalsRepository = require('../repository/rentalsRepository');
 
-exports.getAllRentals = async (req, res) => {
-  return new Promise((resolve, reject) => {
-    db.query(`SELECT * FROM rentals`, (err, results) => {
-        if (err) {
-            reject(err);
-        } else {
-            resolve(results);
-        }
-    });
-});
-};
+async function getAllRentals() {
+    try {
+        const getAllRentals = await rentalsRepository.getAllRentals();
+        return getAllRentals;
+    } catch (error) {
+        throw error;
+    }
+}
 
-exports.bookVehicle = async (req, res) => {
-  const { firstName, lastName, vehicleWheel, vehicleType, vehicleModel, startDate, endDate } = req.body;
+async function bookVehicle(req) {
+  try {
+      const checkVehicleAvailability = await rentalsRepository.checkVehicleAvailability(req);
+      if(checkVehicleAvailability.length > 0){
+        throw { statusCode: 400, message: 'Vehicle not available for the selected dates'};
+      }
+      const bookVehicle = await rentalsRepository.bookVehicle(req);
+      return bookVehicle;
+  } catch (error) {
+      throw error;
+  }
+}
 
-  return new Promise((resolve, reject) => {
-    db.query(`SELECT * FROM rentals WHERE vehicle_wheel = ?'${vehicleWheel}' AND vehicle_type = '${vehicleType}' AND vehicle_model = '${vehicleModel}' AND ('${startDate}' < end_date OR '${endDate}' > start_date)`, (err, results) => {
-        if (err) {
-            reject(err);
-        } else {
-          if (results.length > 0) {
-            res.status(400).json({ error: 'Vehicle not available for the selected dates' });
-            return;
-          }
-
-          db.query(`INSERT INTO rentals (first_name, last_name, vehicle_wheel, vehicle_type, vehicle_model, start_date, end_date) VALUES ('${firstName}', '${lastName}', '${vehicleWheel}', '${vehicleType}', '${vehicleModel}', '${startDate}', '${endDate}')`, (insertErr, insertResults) => {
-            if (insertErr) {
-                reject(err);
-            } else {
-              resolve(insertResults);
-            }
-        });
-        }
-    });
-});
+module.exports = {
+  getAllRentals,
+  bookVehicle
 };

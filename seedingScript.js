@@ -1,4 +1,4 @@
-const db = require('./models/db');
+const db = require('./config/db');
 
 const seedVehicleWheelData = [
   { wheel: '2' },
@@ -49,6 +49,20 @@ const createTables = async () => {
       type INT NOT NULL,
       model VARCHAR(255) NOT NULL,
       FOREIGN KEY (type) REFERENCES vehicles_type(id)
+    )
+  `);
+
+  // Create rentals table
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS rentals (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      first_name VARCHAR(255) NOT NULL,
+      last_name VARCHAR(255) NOT NULL,
+      vehicle_wheel VARCHAR(255) NOT NULL,
+      vehicle_type VARCHAR(255) NOT NULL,
+      vehicle_model VARCHAR(255) NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL
     )
   `);
 };
